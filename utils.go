@@ -1,11 +1,20 @@
 package main
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 func determineMove(gameRequest GameRequest) MoveResponse {
 	// Choose a random direction to move in
 	possibleMoves := []string{"up", "down", "left", "right"}
 	move := possibleMoves[rand.Intn(len(possibleMoves))]
+
+	fmt.Printf("GS: Move: %v, Head: %v, Body: %v",
+		gameRequest.Turn,
+		gameRequest.You.Head,
+		gameRequest.You.Body,
+	)
 
 	if gameRequest.You.Head.X == 0 {
 		move = "left"
