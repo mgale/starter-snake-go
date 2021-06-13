@@ -29,10 +29,11 @@ type Battlesnake struct {
 }
 
 type Board struct {
-	Height int           `json:"height"`
-	Width  int           `json:"width"`
-	Food   []Coord       `json:"food"`
-	Snakes []Battlesnake `json:"snakes"`
+	Height  int           `json:"height"`
+	Width   int           `json:"width"`
+	Food    []Coord       `json:"food"`
+	Snakes  []Battlesnake `json:"snakes"`
+	Hazards []Coord       `json:"hazards"`
 }
 
 type BattlesnakeInfoResponse struct {
@@ -86,6 +87,19 @@ func HandleStart(w http.ResponseWriter, r *http.Request) {
 
 	// Nothing to respond with here
 	fmt.Print("START\n")
+	gameState := GameState{
+		lastMove:      "",
+		currentTarget: Coord{X: 0, Y: 0},
+		targetLoop: []Coord{
+			{X: 0, Y: 0},
+			{
+				X: request.Board.Width - 1,
+				Y: request.Board.Height - 1,
+			},
+		},
+	}
+
+	gameStates[request.Game.ID] = gameState
 }
 
 // HandleMove is called for each turn of each game.
@@ -98,7 +112,10 @@ func HandleMove(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	response := determineMove(request)
+	gameState := gameStates[request.Game.ID]
+	gameState.gameRequest = request
+	response, gameState := determineMove(gameState)
+	gameStates[request.Game.ID] = gameState
 
 	fmt.Printf("MOVE: %s\n", response.Move)
 	w.Header().Set("Content-Type", "application/json")
@@ -126,6 +143,9 @@ func main() {
 	if len(port) == 0 {
 		port = "8080"
 	}
+
+	gameStates = make(map[string]GameState)
+	difftest()
 
 	http.HandleFunc("/", HandleIndex)
 	http.HandleFunc("/start", HandleStart)
