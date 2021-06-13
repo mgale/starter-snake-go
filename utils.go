@@ -74,6 +74,14 @@ func createWorld(gameRequest GameRequest) World {
 		}, coord.X, coord.Y)
 	}
 
+	for _, snake := range gameRequest.Board.Snakes {
+		for _, coord := range snake.Body {
+			w.SetTile(&Tile{
+				Kind: KindBlocker,
+			}, coord.X, coord.Y)
+		}
+	}
+
 	w.SetTile(&Tile{
 		Kind: KindFrom,
 	}, gameRequest.You.Head.X, gameRequest.You.Head.Y)
